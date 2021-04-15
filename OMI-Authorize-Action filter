@@ -1,0 +1,25 @@
+ public class Authorize366 : AuthorizeAttribute
+    {
+        public override void OnAuthorization(AuthorizationContext filterContext)
+        {
+            var hasPermission = false;
+            if (HttpContext.Current.Session != null && HttpContext.Current.Session["UserMenu"] != null && HttpContext.Current.Session["UserLoggedInOMI3"]?.ToString() == "True")
+            {
+                var apps = HttpContext.Current.Session["UserMenuApps"] as List<Dictionary<string, string>>;
+                var url = HttpContext.Current.Request.Url.LocalPath.TrimStart('/');
+                if (apps != null && apps.Any(x => string.Equals(x["PageLink"], url, StringComparison.OrdinalIgnoreCase)))
+                {
+                    hasPermission = true;
+                }
+            }
+            if (hasPermission) return;
+            if (HttpContext.Current.Session != null && HttpContext.Current.Session["UserLoggedIn"]?.ToString() == "True")
+            {
+                filterContext.Result = new RedirectResult("/Login/UnAuthorized");
+            }
+            else
+            {
+                filterContext.Result = new RedirectResult("/Login");
+            }
+        }
+    }
